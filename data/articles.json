@@ -1,7 +1,0 @@
-{
-  "articles": [
-    {"id": "1", "title": "Understanding React", "url": "https://example.com", "category": "Frontend", "date": "2025-01-15"},
-    {"id": "2", "title": "TypeScript Best Practices", "url": "https://example.com", "category": "TypeScript", "date": "2025-01-10"}
-  ],
-  "categories": ["Frontend", "Backend", "DevOps", "Design"]
-}

@@ -1,24 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-
-type ReadingItem = { id: string; title: string; category: "Book" | "Essay"; summary: string; meta: string; note: string };
-const ITEMS: ReadingItem[] = [
-  { id: "ddia", title: "Designing Data-Intensive Applications", category: "Book", summary: "Systems fundamentals.", meta: "In progress / 24%", note: "A shelf marker for the chapters that make systems feel less mysterious: boundaries, data, and the cost of a convenient default." },
-  { id: "working", title: "The Work of Art in the Age of Mechanical Reproduction", category: "Essay", summary: "Copies, aura, and attention.", meta: "Queued / 12 pages", note: "A short return to the question of what changes when a thing can travel farther than the room that made it." },
-  { id: "shape", title: "Shape Up", category: "Book", summary: "Appetite before task lists.", meta: "Finished / notes open", note: "A useful reminder that a plan is a boundary around a bet, not a longer list of instructions." },
-  { id: "small", title: "Small Is Beautiful", category: "Essay", summary: "Scale as a design decision.", meta: "Queued / 8 pages", note: "A compact prompt for asking whether the next layer creates leverage or merely creates somewhere else to look." },
-];
-const CATEGORIES = ["All", "Book", "Essay"] as const;
+import { useMemo, useState } from "react";
+import { CATEGORIES, ITEMS, filterItems, pickSelected, type Category } from "@/lib/reading";
 
 export default function Home() {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("All");
+  const [category, setCategory] = useState<Category>("All");
   const [selectedId, setSelectedId] = useState("ddia");
-  const visible = useMemo(() => ITEMS.filter((item) => (category === "All" || item.category === category) && `${item.title} ${item.summary} ${item.category}`.toLowerCase().includes(query.toLowerCase())), [category, query]);
-  const selected = ITEMS.find((item) => item.id === selectedId) ?? ITEMS[0];
-
-  useEffect(() => { if (visible.length && !visible.some((item) => item.id === selectedId)) setSelectedId(visible[0].id); }, [selectedId, visible]);
+  const visible = useMemo(() => filterItems(ITEMS, category, query), [category, query]);
+  // Falls back to the first visible item when a search hides the selected one.
+  const selected = pickSelected(ITEMS, visible, selectedId);
 
   return (
     <main className="reading-shell">
