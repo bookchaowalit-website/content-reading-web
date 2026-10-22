@@ -1,52 +1,40 @@
-# bookchaowalit-reading-frontend — Product brief
+# Reading List — Product truth
 
-**Slug:** `bookchaowalit-website/bookchaowalit-reading-frontend`  
-**Generated:** 2026-08-11 (bulk Book Dev closeout)  
-**Status:** starter / portfolio boundary
+> Inferred from the code and copy (no user interview). Checked against the portfolio card claims review
+> (`portfolio-site-web/docs/audits/CARD-CLAIMS-REVIEW-2026-10.md`, row `reading`, evidence Prototype) on 2026-10-22.
 
-## Purpose
+## What it is
 
-Portfolio repository under Book Dev. This brief records ownership and the
-current honest status so the nested tree is not an empty shell in the task
-system.
+A client-only demo of a reading shelf over four hard-coded sample items (two books, two essays).
 
-## Runnable path
+## Who it is for
 
-See `README.md` for install and run instructions when present.
+A portfolio visitor who wants to see a small, calm list UI: search, a category filter and one open item.
 
-## Limits
+## What works today
 
-- Not claimed as production-ready unless README and tests prove it.
-- Mobile smoke / emulator acceptance is separate and toolchain-dependent.
+1. Search title, summary or category (case-insensitive) and filter by All, Book or Essay.
+2. Select an item to read its summary, status line and margin note. If a search hides the selected item, the first
+   visible one opens instead.
+3. `/api/mcp` answers JSON-RPC with `get_all`, `get_by_id` and `search` over the same list.
+4. Front-end and server errors go to Sentry (errors only, personal data stripped) when `NEXT_PUBLIC_SENTRY_DSN` is set.
 
-## Current product truth
+## What does not work (and must not be claimed)
 
-This is a compact local reading queue for filtering one authored list by Book
-or Essay and searching title, summary, or category. Items are sample records;
-there is no book import, progress sync, recommendation engine, or account.
+- No book logging, progress percentages, yearly goals, genre stats or contributions chart (claims removed from the
+  portfolio card in the 2026-10 review).
+- The progress text on each item ("In progress / 24%") is fixed sample copy, not tracked progress.
+- No import, account, storage or sync; nothing survives a reload. No product analytics beyond Vercel Analytics.
 
-## Source README excerpt
+## Live URL and deploy state
 
-```
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+- Live: https://reading.bookchaowalit.com (HTTP 200 on 2026-10-22).
+- The Vercel project `bookchaowalit-reading-frontend` is deployed only by CLI (last production 2026-10-08, commit
+  5b68f06) and its Git link names the old repository, so a push to `main` does not deploy. The live site lags `main`
+  (no Sentry, old template MCP route) until the owner reconnects Vercel Git to this repository (owner action D9).
+  `NEXT_PUBLIC_SENTRY_DSN` is already set on the Vercel project (Sentry project `content-reading-web`, org
+  `personal-yu0`).
 
-## Getting Started
+## Boundaries
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize an
-```
+- Browser-only apart from the stateless `/api/mcp` route.
