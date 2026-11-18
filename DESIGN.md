@@ -19,3 +19,7 @@ labels, 28px filter buttons) are retired.
 
 The list itself is `lib/reading.ts` (also served by `/api/mcp`); views live in
 `components/reading-views.tsx` and take plain data so `tests/home.test.tsx` can render every state.
+
+Follow-up 2026-11-19: item links carry the shelf's `?type=` and `?q=`, so Back and previous / next stay in
+the view the reader came from; each item page has its own share title, description and `og:url`; the
+footer's MCP API link opens `/mcp`, a how-to page (the endpoint itself answers POST only).

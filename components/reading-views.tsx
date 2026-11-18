@@ -17,15 +17,18 @@ export function ReadingFrame({ children }: { children: ReactNode }) {
     <Reader>
       <ReaderTop name="Reading Shelf" tagline="Chaowalit Greepoke" links={[{ href: "/", label: "Shelf" }]} />
       <main id="main" className="rs-main">{children}</main>
-      <ReaderFoot source={SOURCE} links={[{ href: "/api/mcp", label: "MCP API" }]} note="A short hand-written list kept in the repository: nothing is imported or synced." />
+      <ReaderFoot source={SOURCE} links={[{ href: "/mcp", label: "MCP API" }]} note="A short hand-written list kept in the repository: nothing is imported or synced." />
     </Reader>
   );
 }
 
 export const isCategory = (value: string): value is Category => (CATEGORIES as readonly string[]).includes(value);
 
-const toEntry = (item: ReadingItem): Entry => ({ href: `/read/${item.id}`, title: item.title, summary: item.summary, meta: [item.category, item.meta] });
-const shelfHref = (category = "", q = "") => `/?${new URLSearchParams({ ...(category ? { type: category } : {}), ...(q ? { q } : {}) })}`.replace(/\?$/, "");
+/** The shelf's state (type and query) as a query string, carried to item pages so Back returns to the same view. */
+const state = (category = "", q = "") => `?${new URLSearchParams({ ...(category ? { type: category } : {}), ...(q ? { q } : {}) })}`.replace(/\?$/, "");
+const shelfHref = (category = "", q = "") => `/${state(category, q)}`;
+const itemHref = (id: string, category = "", q = "") => `/read/${id}${state(category, q)}`;
+const toEntry = (category: string, q: string) => (item: ReadingItem): Entry => ({ href: itemHref(item.id, category, q), title: item.title, summary: item.summary, meta: [item.category, item.meta] });
 
 /** The shelf: search and type chips (counts follow the search), then each item as one row that opens its page. */
 export function ShelfView({ items, q = "", type = "" }: { items: ReadingItem[]; q?: string; type?: string }) {
@@ -58,7 +61,7 @@ export function ShelfView({ items, q = "", type = "" }: { items: ReadingItem[]; 
             <ResultCount shown={shown.length} total={items.length} noun="piece" query={query || undefined} filter={typeParam ? `${typeParam.toLowerCase()}s` : undefined} />
           </div>
           {shown.length > 0 ? (
-            <EntryList entries={shown.map(toEntry)} />
+            <EntryList entries={shown.map(toEntry(typeParam, query))} />
           ) : (
             <EmptyState title="Nothing on the shelf matches" action={<Link className="rs-plain" href="/">Show the whole shelf</Link>}>
               Try fewer or different words, or another type.
@@ -70,14 +73,22 @@ export function ShelfView({ items, q = "", type = "" }: { items: ReadingItem[]; 
   );
 }
 
-/** One item: its status, summary and margin note, then previous / next in shelf order. */
-export function ItemView({ item, items }: { item: ReadingItem; items: ReadingItem[] }) {
-  const { previous, next } = neighbours(items, items.findIndex((i) => i.id === item.id));
-  const link = (i?: ReadingItem): PagerLink | undefined => (i ? { href: `/read/${i.id}`, title: i.title } : undefined);
+/**
+ * One item: its status, summary and margin note, then previous / next. Opened from a filtered shelf, Back and the
+ * pager keep that view: previous / next step through the items the shelf showed, and Back returns to it.
+ */
+export function ItemView({ item, items, q = "", type = "" }: { item: ReadingItem; items: ReadingItem[]; q?: string; type?: string }) {
+  const query = q.trim();
+  const category: Category = isCategory(type) ? type : "All";
+  const typeParam = category === "All" ? "" : category;
+  const shown = filterItems(items, category, query);
+  const list = shown.some((i) => i.id === item.id) ? shown : items;
+  const { previous, next } = neighbours(list, list.findIndex((i) => i.id === item.id));
+  const link = (i?: ReadingItem): PagerLink | undefined => (i ? { href: itemHref(i.id, typeParam, query), title: i.title } : undefined);
   return (
     <ReadingFrame>
       <article className="rs-article">
-        <ArticleHeader back={{ href: "/", label: "The shelf" }} title={item.title} lede={item.summary} meta={[item.category, item.meta]} />
+        <ArticleHeader back={{ href: shelfHref(typeParam, query), label: "The shelf" }} title={item.title} lede={item.summary} meta={[item.category, item.meta]} />
         <Prose>
           <h2>Margin note</h2>
           <p>{item.note}</p>

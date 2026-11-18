@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { ItemView, ShelfView } from "@/components/reading-views";
 import { ITEMS } from "@/lib/reading";
 import Home from "@/app/page";
+import McpPage from "@/app/mcp/page";
 import ItemPage, { generateMetadata, generateStaticParams } from "@/app/read/[id]/page";
 import sitemap from "@/app/sitemap";
 import robots from "@/app/robots";
@@ -75,6 +76,38 @@ describe("item pages", () => {
     }
     expect(await generateMetadata(params("missing"))).toEqual({});
     await expect(ItemPage(params("missing"))).rejects.toThrow();
+  });
+});
+
+describe("follow-ups", () => {
+  it("carries the shelf's search and type into item links, and Back and the pager keep them", async () => {
+    const shelf = page(<ShelfView items={ITEMS} type="Essay" q="small" />);
+    expect(shelf.querySelector(".rs-entry-link")?.getAttribute("href")).toBe("/read/small?type=Essay&q=small");
+    const item = page(await ItemPage({ ...params("working"), searchParams: Promise.resolve({ type: "Essay", q: [""] }) }));
+    expect(item.querySelector(".rs-back")?.getAttribute("href")).toBe("/?type=Essay");
+    // Within the Essay view the neighbours are the other essay, not the next book.
+    expect(item.querySelector('.rs-pager a[rel="next"]')?.getAttribute("href")).toBe("/read/small?type=Essay");
+    expect(item.querySelector('.rs-pager a[rel="prev"]')).toBeNull();
+    const direct = page(<ItemView item={ITEMS[3]} items={ITEMS} q="nothing-matches" type="Poem" />);
+    expect(direct.querySelector(".rs-back")?.getAttribute("href")).toBe("/?q=nothing-matches");
+    expect(direct.querySelector('.rs-pager a[rel="prev"]')?.getAttribute("href")).toBe("/read/shape?q=nothing-matches");
+  });
+
+  it("gives each item its own share title, description and URL", async () => {
+    const meta = await generateMetadata(params("shape"));
+    expect(meta.openGraph).toMatchObject({ url: "https://reading.bookchaowalit.com/read/shape", title: "Shape Up", type: "article" });
+    expect(meta.description).toBe("Appetite before task lists. Book · Finished / notes open.");
+    expect(meta.twitter).toMatchObject({ title: "Shape Up" });
+  });
+
+  it("links the footer to an MCP how-to page that lists the real tools", () => {
+    expect(page(<ShelfView items={ITEMS} />).querySelector('.rs-foot a[href="/mcp"]')?.textContent).toBe("MCP API");
+    const host = page(<McpPage />);
+    expect(host.querySelector("h1")?.textContent).toBe("MCP API");
+    expect([...host.querySelectorAll("tbody code")].map((c) => c.textContent)).toEqual(["get_all", "get_by_id", "search"]);
+    expect([...host.querySelectorAll("tbody td:last-child")].map((c) => c.textContent)).toEqual(["none", "id", "query"]);
+    expect(host.querySelector("pre code")?.textContent).toContain("curl -s https://reading.bookchaowalit.com/api/mcp");
+    expect(host.querySelector('.rs-table[role="region"] table')).not.toBeNull();
   });
 });
 

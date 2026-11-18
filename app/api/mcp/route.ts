@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
 import { ITEMS, filterItems } from "@/lib/reading";
+import { TOOLS } from "@/lib/mcp-tools";
 
 // Stateless JSON-RPC MCP endpoint over the same authored reading list the page shows.
 
 type RpcRequest = { id?: number | string | null; method?: string; params?: { name?: string; arguments?: Record<string, unknown> } };
 
-const TOOLS = [
-  { name: "get_all", description: "List every item on the reading shelf", inputSchema: { type: "object", properties: {} } },
-  { name: "get_by_id", description: "Get one reading item by id", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
-  { name: "search", description: "Search titles, summaries and categories", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
-];
 
 class RpcError extends Error {
   constructor(readonly code: number, message: string) {
