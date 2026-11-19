@@ -43,7 +43,8 @@ describe("shelf", () => {
   it("says when nothing matches, with a way back, and ignores an unknown type", () => {
     const none = page(<ShelfView items={ITEMS} q="zzz" />);
     expect(none.querySelector(".rs-empty h2")?.textContent).toBe("Nothing on the shelf matches");
-    expect(none.querySelector('.rs-empty a[href="/"]')).not.toBeNull();
+    // A full reload empties the uncontrolled search field, and the #rs-search-q target puts focus back in it.
+    expect(none.querySelector('.rs-empty a[href="/#rs-search-q"]')?.textContent).toBe("Show the whole shelf");
     expect(page(<ShelfView items={ITEMS} type="Poem" />).querySelector(".rs-count")?.textContent).toBe("4 pieces");
   });
 

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   ArticleHeader, EmptyState, EntryList, Pager, Prose, Reader, ReaderFoot, ReaderHead, ReaderTop, ResultCount, SearchForm, TagFilter,
@@ -63,7 +62,9 @@ export function ShelfView({ items, q = "", type = "" }: { items: ReadingItem[]; 
           {shown.length > 0 ? (
             <EntryList entries={shown.map(toEntry(typeParam, query))} />
           ) : (
-            <EmptyState title="Nothing on the shelf matches" action={<Link className="rs-plain" href="/">Show the whole shelf</Link>}>
+            // A full reload (not <Link>) empties the uncontrolled search field; #rs-search-q focuses it, like Clear.
+            // eslint-disable-next-line @next/next/no-html-link-for-pages
+            <EmptyState title="Nothing on the shelf matches" action={<a className="rs-plain" href="/#rs-search-q">Show the whole shelf</a>}>
               Try fewer or different words, or another type.
             </EmptyState>
           )}
