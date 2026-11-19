@@ -37,7 +37,7 @@ describe("shelf", () => {
     expect(host.querySelector(".rs-count")?.textContent).toBe("Showing 1 of 4 pieces in books for “shape”");
     expect(texts(host, ".rs-chip")).toEqual(["All1", "Book1", "Essay0"]);
     expect(host.querySelector('input[type="hidden"][name="type"]')?.getAttribute("value")).toBe("Book");
-    expect(host.querySelector('.rs-search a[href="/?type=Book"]')?.textContent).toBe("Clear");
+    expect(host.querySelector('.rs-search a[href="/?type=Book#rs-search-q"]')?.textContent).toBe("Clear");
   });
 
   it("says when nothing matches, with a way back, and ignores an unknown type", () => {
