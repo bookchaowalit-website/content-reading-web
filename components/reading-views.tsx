@@ -75,16 +75,20 @@ export function ShelfView({ items, q = "", type = "" }: { items: ReadingItem[]; 
 
 /**
  * One item: its status, summary and margin note, then previous / next. Opened from a filtered shelf, Back and the
- * pager keep that view: previous / next step through the items the shelf showed, and Back returns to it.
+ * pager keep that view: previous / next step through the items the shelf showed, and Back returns to it. If the
+ * filter does not hold the item, previous / next step through the whole shelf with unfiltered links.
  */
 export function ItemView({ item, items, q = "", type = "" }: { item: ReadingItem; items: ReadingItem[]; q?: string; type?: string }) {
   const query = q.trim();
   const category: Category = isCategory(type) ? type : "All";
   const typeParam = category === "All" ? "" : category;
   const shown = filterItems(items, category, query);
-  const list = shown.some((i) => i.id === item.id) ? shown : items;
+  // An old link whose filter no longer holds this item falls back to the whole shelf; then the pager links drop the
+  // filter too, so previous and next keep stepping through that same full order (Back still returns to the view).
+  const inView = shown.some((i) => i.id === item.id);
+  const list = inView ? shown : items;
   const { previous, next } = neighbours(list, list.findIndex((i) => i.id === item.id));
-  const link = (i?: ReadingItem): PagerLink | undefined => (i ? { href: itemHref(i.id, typeParam, query), title: i.title } : undefined);
+  const link = (i?: ReadingItem): PagerLink | undefined => (i ? { href: inView ? itemHref(i.id, typeParam, query) : itemHref(i.id), title: i.title } : undefined);
   return (
     <ReadingFrame>
       <article className="rs-article">

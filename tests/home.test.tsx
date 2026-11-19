@@ -90,7 +90,25 @@ describe("follow-ups", () => {
     expect(item.querySelector('.rs-pager a[rel="prev"]')).toBeNull();
     const direct = page(<ItemView item={ITEMS[3]} items={ITEMS} q="nothing-matches" type="Poem" />);
     expect(direct.querySelector(".rs-back")?.getAttribute("href")).toBe("/?q=nothing-matches");
-    expect(direct.querySelector('.rs-pager a[rel="prev"]')?.getAttribute("href")).toBe("/read/shape?q=nothing-matches");
+    expect(direct.querySelector('.rs-pager a[rel="prev"]')?.getAttribute("href")).toBe("/read/shape");
+  });
+
+  it("keeps one order when an old link's filter does not hold the item: the pager walks the whole shelf", async () => {
+    // /read/working?type=Book: "working" is an essay, so the pager uses the full shelf order without the filter.
+    const working = page(await ItemPage({ ...params("working"), searchParams: Promise.resolve({ type: "Book" }) }));
+    expect(working.querySelector(".rs-back")?.getAttribute("href")).toBe("/?type=Book");
+    expect(working.querySelector('.rs-pager a[rel="next"]')?.getAttribute("href")).toBe("/read/shape");
+    expect(working.querySelector('.rs-pager a[rel="prev"]')?.getAttribute("href")).toBe("/read/ddia");
+    // Following Next lands on Shape Up in the same full order, so Previous comes straight back to "working".
+    const shape = page(await ItemPage({ ...params("shape"), searchParams: Promise.resolve({}) }));
+    expect(shape.querySelector('.rs-pager a[rel="prev"]')?.getAttribute("href")).toBe("/read/working");
+  });
+
+  it("shares /mcp as itself, not as the shelf", async () => {
+    const { metadata } = await import("@/app/mcp/page");
+    expect(metadata.alternates).toMatchObject({ canonical: "/mcp" });
+    expect(metadata.openGraph).toMatchObject({ url: "https://reading.bookchaowalit.com/mcp", title: "MCP API", description: metadata.description });
+    expect(metadata.twitter).toMatchObject({ title: "MCP API", description: metadata.description });
   });
 
   it("gives each item its own share title, description and URL", async () => {
