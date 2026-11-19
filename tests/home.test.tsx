@@ -127,6 +127,14 @@ describe("follow-ups", () => {
     expect(host.querySelector("pre code")?.textContent).toContain("curl -s https://reading.bookchaowalit.com/api/mcp");
     expect(host.querySelector('.rs-table[role="region"] table')).not.toBeNull();
   });
+
+  it("says /api/mcp is a custom JSON-RPC subset, not a full MCP server", () => {
+    const text = page(<McpPage />).textContent ?? "";
+    expect(text).not.toMatch(/answers Model Context Protocol/);
+    expect(text).toContain("Not a full MCP server");
+    expect(text).toContain("result.items");
+    expect(text).toMatch(/standard MCP\s+clients expect/);
+  });
 });
 
 describe("site files", () => {
